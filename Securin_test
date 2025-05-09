@@ -1,0 +1,307 @@
+/** 
+ * 
+ * @author vladi
+ * Project: Securin_test
+ * Author: Vladimir Murray
+ * Date: 10/31/2024
+ * Purpose: converts JSON language data to XML language
+ * 
+ */
+import java.util.*;
+
+public class Securin_test extends createXMLJSONConverter implements XMLJSONConverterI{
+    static String x = "";
+    static String y = "";
+    public static void main(String[] args) {
+        // TODO code application logic here
+        Scanner s = new Scanner(System.in);
+        System.out.print("Enter JSON data: ");
+        x = s.nextLine();
+        y = "{ \"organization\" : {\"name\":\"Securin\",   \"type\":\"Inc\",   \"building_number\":4,\n   \"floating\":-17.4,   \"null_test\": null}}";
+        System.out.println("\nExample of JSON information:");
+        System.out.println(y+"\n");
+        System.out.println("XML output of example:\n"+convertJSONtoXML(y));
+        System.out.println("\nOutput of the entered JSON input:\n"+convertJSONtoXML(x));
+    }
+}
+
+interface XMLJSONConverterI {
+    
+    
+    
+}
+
+class createXMLJSONConverter{
+    public static String convertJSONtoXML(String x) {
+        x = x.replaceAll("\\s", "");
+        String l = "";
+        String key = "";
+        String type = "";
+        String value;
+        int q;
+        final char quote = '"';
+        //System.out.println(x);
+        
+        
+        for(int i=0;i<x.length();i++){
+            char a = x.charAt(i);
+            
+            switch(a){
+                case ':': {
+                    if (x.charAt(i+1) == '{'){
+                        l += "<object name=\""+key+"\">";
+                        i += 1;
+                        key = "";
+                        type = "";
+                        break;
+                    }
+                    else if (x.charAt(i+1) == '['){
+                        l += "<array name=\""+key+"\">";
+                        i += 1;
+                        key = "";
+                        type = "";
+                        break;
+                    }
+                    else if (x.charAt(i+1) == '"'){
+                        value = x.substring(i+2,x.indexOf("\"",i+2));
+                        l += "<string name=\""+key+"\">"+value+"</string>";
+                        i+=(value.length()+2);
+                        type = "";
+                        key = "";
+                        break;
+                    }
+                    else if ((x.substring(i+1).length()>4)){
+                        if (x.substring(i+1,i+6).equals("false")){
+                            l += "<boolean name=\""+key+"\">false</boolean>";
+                            i += 5;
+                            key = "";
+                            type = "";
+                            break;
+                        }
+                        else if (x.substring(i+1,i+5).equals("null")){
+                            l += "<null name=\""+key+"\"/>";
+                            i += 4;
+                            key = "";
+                            type = "";
+                            break;
+                        }
+                        else if (x.substring(i+1,i+5).equals("true")){
+                            l += "<boolean name=\""+key+"\">true</boolean>";
+                            i += 4;
+                            key = "";
+                            type = "";
+                            break;
+                        }
+                        else{
+                            int e;
+                            int ab = x.indexOf("}", i);
+                            int bc = x.indexOf("]",i);
+                            int cd = x.indexOf(",",i);
+                            if (ab == -1)
+                                ab = 10000;
+                            if (bc == -1)
+                                bc = 10000;
+                            if (cd == -1)
+                                cd = 10000;
+                            if(cd<bc && cd<ab)
+                                e = x.indexOf(",",i);
+                            else if(ab<bc && ab<cd)
+                                e = x.indexOf("}",i);
+                            else if(bc<ab && bc<cd)
+                                e = x.indexOf("]",i);
+                            else
+                                e = x.length();
+                            value = x.substring(i+1,e);
+                            l += "<number name=\""+key+"\">"+value+"</number>";
+                            i += (value.length());
+                            key = "";
+                            type = "";
+                            break;
+                        }
+                    }
+                    else if ((x.substring(i+1).length()>3)){
+                        if (x.substring(i+1,i+5).equals("null")){
+                            l += "<null name=\""+key+"\"/>";
+                            i += 4;
+                            key = "";
+                            type = "";
+                            break;
+                        }
+                        else if (x.substring(i+1,i+5).equals("true")){
+                            l += "<boolean name=\""+key+"\">true</boolean>";
+                            i += 4;
+                            key = "";
+                            type = "";
+                            break;
+                        }
+                        else{
+                            int e;
+                            int ab = x.indexOf("}", i);
+                            int bc = x.indexOf("]",i);
+                            int cd = x.indexOf(",",i);
+                            if (ab == -1)
+                                ab = 10000;
+                            if (bc == -1)
+                                bc = 10000;
+                            if (cd == -1)
+                                cd = 10000;
+                            if(cd<bc && cd<ab)
+                                e = x.indexOf(",",i);
+                            else if(ab<bc && ab<cd)
+                                e = x.indexOf("}",i);
+                            else if(bc<ab && bc<cd)
+                                e = x.indexOf("]",i);
+                            else
+                                e = x.length();
+                            //System.out.println(e);
+                            value = x.substring(i+1,e);
+                            //System.out.println(value.length());
+                            l += "<number name=\""+key+"\">"+value+"</number>";
+                            i += (value.length());
+                            key = "";
+                            type = "";
+                            break;
+                        }
+                    }
+                    
+                    else {
+                        int e = x.length();
+                        value = x.substring(i+1,e);
+                        l += "<number name=\""+key+"\">"+value+"</number>";
+                        i += (value.length());
+                        key = "";
+                        type = "";
+                        break;
+                    }
+                }
+                case '{':{ 
+                    l += "<object>";
+                        break;
+                }
+                case '}':{
+                    if (type.equals("num")){
+                        key = "<number>"+key+"</number>";
+                    }
+                    if (type.equals("str")){
+                        key = "<string>"+key+"</string>";
+                    }
+                    l += (key+"</object>");
+                    key = "";
+                    type = "";
+                    break;
+                }
+                case '[':{ 
+                    l += "<array>";
+                    break;
+                }
+                case ']':{
+                    if (type.equals("num")){
+                        key = "<number>"+key+"</number>";
+                    }
+                    if (type.equals("str")){
+                        key = "<string>"+key+"</string>";
+                    }
+                    l += key+"</array>";
+                    key = "";
+                    type = "";
+                    break;
+                }
+                case ',': {
+                    /**
+                    try{
+                        if(x.substring(i+1,i+5).equals("true")){
+                            l += "<boolean>true</boolean>";
+                            i += 4;
+                            break;
+                        }
+                        else if(x.substring(i+1,i+5).equals("null")){
+                            l += "<null/>";
+                            i += 4;
+                            break;
+                        }
+                        else if(x.substring(i+1,i+6).equals("false")){
+                            l += "<boolean>false</boolean>";
+                            i += 5;
+                            break;
+                        }
+                        
+                    } catch(Exception e){
+                        System.out.print("");
+                    }*/
+                    if (type.equals("num")){
+                        key = "<number>"+key+"</number>";
+                    }
+                    if (type.equals("str")){
+                        key = "<string>"+key+"</string>";
+                    }
+                    l += key;
+                    key="";
+                    type="";
+                    break;
+                }
+                case quote: {
+                    key = x.substring(i+1, x.indexOf(quote,i+1));
+                    
+                    type = "str";
+                    i += 1+key.length();
+                    break;
+                }
+                case '-': case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':{
+                    type = "num";
+                    int ab = x.indexOf("}", i);
+                    int bc = x.indexOf("]",i);
+                    int cd = x.indexOf(",",i);
+                    if (ab == -1){
+                        ab = 10000;
+                    }
+                    if (bc == -1){
+                        bc = 10000;
+                    }
+                    if (cd == -1){
+                        cd = 10000;
+                    }
+                    if(cd<bc && cd<ab){
+                        q = x.indexOf(",",i);
+                    }
+                    else if(ab<bc && ab<cd){
+                        q = x.indexOf("}",i);
+                    }
+                    else if(bc<ab && bc<cd){
+                        q = x.indexOf("]",i);
+                    }
+                    else{
+                        q = x.length();
+                    }
+                    key = x.substring(i,q);
+                    i += (key.length()-1);
+                    break;
+                }
+                case 't': case 'f': case 'n':{
+                    if(x.substring(i,i+4).equals("true")){
+                        l += "<boolean>true</boolean>";
+                        i += 3;
+                        break;
+                    }
+                    else if(x.substring(i,i+4).equals("null")){
+                        l += "<null/>";
+                        i += 3;
+                        break;
+                    }
+                    else if(x.substring(i,i+5).equals("false")){
+                        l += "<boolean>false</boolean>";
+                        i += 4;
+                        break;
+                    }
+                }
+            }
+        }
+        if (type.equals("num"))
+            key = "<number>"+key+"</number>";
+        if (type.equals("str"))
+            key = "<string>"+key+"</string>";
+        l += key;
+        return l;
+    }
+}
+
+
